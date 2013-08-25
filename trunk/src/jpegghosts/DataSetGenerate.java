@@ -30,7 +30,7 @@ public class DataSetGenerate {
 		File folder = new File(inputFolder);
 		File[] files = folder.listFiles();  
 		Arrays.sort(files);
-		int count = 0;
+		int count = 1;
 		
 		for (final File fileEntry : files) {
 			if (!fileEntry.isDirectory()) {
