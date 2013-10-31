@@ -77,13 +77,17 @@ public class DataSetGenerate {
 		int minWidth = (int) (image.width() * MIN_WIDTH);
 		int minHeight = (int) (image.height() * MIN_HEIGHT);
 		
-		int ghostWidth = minWidth + random.nextInt(maxWidth - minWidth + 1);
-		int ghostHeight = minHeight + random.nextInt(maxHeight - minHeight + 1);
+//		int ghostWidth = minWidth + random.nextInt(maxWidth - minWidth + 1);
+//		int ghostHeight = minHeight + random.nextInt(maxHeight - minHeight + 1);
+		int ghostWidth = 200;
+		int ghostHeight = 200;
 
 		Size ghostSize = new Size(ghostWidth, ghostHeight);
 		
-		int x = random.nextInt(image.width() - (int)ghostSize.width);
-		int y = random.nextInt(image.height() - (int)ghostSize.height);
+//		int x = random.nextInt(image.width() - (int)ghostSize.width);
+//		int y = random.nextInt(image.height() - (int)ghostSize.height);
+		int x = 50;
+		int y = 100;
 		
 		// Get the image region
 		Rect tamper = new Rect(x, y, (int)ghostSize.width, (int)ghostSize.height);
@@ -91,11 +95,11 @@ public class DataSetGenerate {
 	}
 
 	private void compressImageRegion(Mat image, Mat imageRegion, Rect tamperPosition) {
-		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 1, 0);
+		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 65, 0);
 		
 		MatOfByte byteImage = new MatOfByte(); 
 		Highgui.imencode(".jpg", imageRegion, byteImage, params);
-		Mat jpegImage = Highgui.imdecode(byteImage,Highgui.CV_LOAD_IMAGE_COLOR);
+		Mat jpegImage = Highgui.imdecode(byteImage, Highgui.CV_LOAD_IMAGE_COLOR);
 		
     	Mat imageSubmat = image.submat(tamperPosition);
     	jpegImage.copyTo(imageSubmat);
@@ -117,6 +121,7 @@ public class DataSetGenerate {
 	}
 
 	private void saveImage(Mat image, String name) {
-		Highgui.imwrite(outputFolder + "/" + name, image);
+		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 100, 0);
+		Highgui.imwrite(outputFolder + "/" + name, image, params);
 	}
 }
