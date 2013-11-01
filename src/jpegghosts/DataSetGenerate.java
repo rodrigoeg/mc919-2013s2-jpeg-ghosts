@@ -1,6 +1,7 @@
 package jpegghosts;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.util.Arrays;
 import java.util.Random;
 
@@ -28,7 +29,12 @@ public class DataSetGenerate {
 
 	public void generate() {
 		File folder = new File(inputFolder);
-		File[] files = folder.listFiles();  
+		File[] files = folder.listFiles(new FilenameFilter() {
+    	    public boolean accept(File dir, String name) {
+    	        return name.toLowerCase().endsWith(".jpeg") ||
+    	        	name.toLowerCase().endsWith(".tif");
+    	    }
+    	});  
 		Arrays.sort(files);
 		int count = 1;
 		
