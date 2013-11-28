@@ -10,7 +10,7 @@ public class Main {
 	static { System.loadLibrary("opencv_java246"); }
 	
     public static void main(String[] args) {
-    	generateDataSet();
+    	//generateDataSet();
     	
     	runMethod();
 		
@@ -19,10 +19,13 @@ public class Main {
     }
 
 	private static void runMethod() {
-		File folder = new File("tampered_images");
+		File folder = new File("source_images");
+		String folderDestination = "result_images"; 
     	File[] files = folder.listFiles(new FilenameFilter() {
     	    public boolean accept(File dir, String name) {
-    	        return name.toLowerCase().endsWith(".jpeg");
+    	    	return name.toLowerCase().endsWith(".jpg")||
+    	        		name.toLowerCase().endsWith(".jpeg") ||
+    	        		name.toLowerCase().endsWith(".tif");
     	    }
     	});  
     	
@@ -32,15 +35,15 @@ public class Main {
 		
 		for (final File fileEntry : files) {
 			if (!fileEntry.isDirectory()) {
-				//jpegGhosts.simplerVersion(fileEntry);
-				jpegGhosts.fullVersion(fileEntry, blockSize);
+				//jpegGhosts.simplerVersion(fileEntry, folderDestination);
+				jpegGhosts.fullVersion(fileEntry, blockSize, folderDestination);
 			}
 		}
 	}
     
     
 	private static void generateDataSet() {
-		DataSetGenerate dataSet = new DataSetGenerate("original_images", "tampered_images");
+		DataSetGenerate dataSet = new DataSetGenerate("generate_dataset_original_images", "source_images");
     	dataSet.generate();
 	}
     

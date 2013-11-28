@@ -31,8 +31,9 @@ public class DataSetGenerate {
 		File folder = new File(inputFolder);
 		File[] files = folder.listFiles(new FilenameFilter() {
     	    public boolean accept(File dir, String name) {
-    	        return name.toLowerCase().endsWith(".jpeg") ||
-    	        	name.toLowerCase().endsWith(".tif");
+    	        return name.toLowerCase().endsWith(".jpg")||
+    	        		name.toLowerCase().endsWith(".jpeg") ||
+    	        		name.toLowerCase().endsWith(".tif");
     	    }
     	});  
 		Arrays.sort(files);
@@ -50,7 +51,7 @@ public class DataSetGenerate {
 				Mat tamperedRegion = tamperImage(image);
 
 				// Save tampered image
-				saveImage(image, fileEntry.getName() + ".jpeg");
+				saveImage(image, fileEntry.getName() + ".jpg");
 				
 				// Save an image reference to point out where the source image was modified
 				saveImage(tamperedRegion, fileEntry.getName() + ".png");
@@ -61,7 +62,6 @@ public class DataSetGenerate {
 	}
 
 	private Mat tamperImage(Mat image) {
-
 		// Calculate the position of the region
 		Rect tamperPosition = generateRectToTamper(image);	
 		Mat imageRegion = new Mat(image, tamperPosition);
@@ -77,11 +77,11 @@ public class DataSetGenerate {
 	}
 
 	private Rect generateRectToTamper(Mat image) {
-		Random random = new Random();
-		int maxWidth = (int) (image.width() * MAX_WIDTH);
-		int maxHeight = (int) (image.height() * MAX_HEIGHT);
-		int minWidth = (int) (image.width() * MIN_WIDTH);
-		int minHeight = (int) (image.height() * MIN_HEIGHT);
+//		Random random = new Random();
+//		int maxWidth = (int) (image.width() * MAX_WIDTH);
+//		int maxHeight = (int) (image.height() * MAX_HEIGHT);
+//		int minWidth = (int) (image.width() * MIN_WIDTH);
+//		int minHeight = (int) (image.height() * MIN_HEIGHT);
 		
 //		int ghostWidth = minWidth + random.nextInt(maxWidth - minWidth + 1);
 //		int ghostHeight = minHeight + random.nextInt(maxHeight - minHeight + 1);
@@ -101,8 +101,8 @@ public class DataSetGenerate {
 	}
 
 	private void compressImageRegion(Mat image, Mat imageRegion, Rect tamperPosition) {
-		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 65, 0);
-		
+		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 60);
+
 		MatOfByte byteImage = new MatOfByte(); 
 		Highgui.imencode(".jpg", imageRegion, byteImage, params);
 		Mat jpegImage = Highgui.imdecode(byteImage, Highgui.CV_LOAD_IMAGE_COLOR);
@@ -127,7 +127,7 @@ public class DataSetGenerate {
 	}
 
 	private void saveImage(Mat image, String name) {
-		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 100, 0);
+		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 90);
 		Highgui.imwrite(outputFolder + "/" + name, image, params);
 	}
 }
