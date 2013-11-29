@@ -3,6 +3,8 @@ package jpegghosts;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class Main {
 
@@ -10,20 +12,22 @@ public class Main {
 	static { System.loadLibrary("opencv_java246"); }
 	
     public static void main(String[] args) {
+    	System.out.println("Starting");
     	//generateDataSet();
     	
     	runMethod();
 		
-		System.out.println("Finished");
+		
     	
     }
 
 	private static void runMethod() {
+		ExecutorService executor = Executors.newFixedThreadPool(4);
 		File folder = new File("source_images");
 		String folderDestination = "result_images"; 
     	File[] files = folder.listFiles(new FilenameFilter() {
     	    public boolean accept(File dir, String name) {
-    	    	return name.toLowerCase().endsWith(".jpg")||
+    	    	return name.toLowerCase().endsWith(".jpg") ||
     	        		name.toLowerCase().endsWith(".jpeg") ||
     	        		name.toLowerCase().endsWith(".tif");
     	    }
@@ -35,10 +39,12 @@ public class Main {
 		
 		for (final File fileEntry : files) {
 			if (!fileEntry.isDirectory()) {
-				//jpegGhosts.simplerVersion(fileEntry, folderDestination);
-				jpegGhosts.fullVersion(fileEntry, blockSize, folderDestination);
+				//jpegGhosts.simplerVersion(fileEntry, folderDestination, executor);
+				jpegGhosts.fullVersion(fileEntry, blockSize, folderDestination, executor);
 			}
 		}
+		
+		executor.shutdown();
 	}
     
     
