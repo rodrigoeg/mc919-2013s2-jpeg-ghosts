@@ -1,8 +1,11 @@
 package jpegghosts;
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfByte;
@@ -27,6 +30,7 @@ public class JpegGhosts {
 		// Read an image
 		Mat image = Highgui.imread(fileEntry.getPath());
 		
+//		generateImageForFullVersion(image, 65, fileEntry, blockSize, folderDestination, executor);
 		for (int quality = 30; quality <= 100; quality = quality + 1) {
 			generateImageForFullVersion(image, quality, fileEntry, blockSize, folderDestination, executor);
 		}
@@ -72,7 +76,6 @@ public class JpegGhosts {
 				File dir = new File(folderDestination + "/" + folderName);
 				dir.mkdir();
 				Highgui.imwrite(folderDestination + "/" + folderName + "/" + fileEntry.getName() + '-'+ quality + ".png", differenceImage);
-     
 	        }
 	    };
 	    executor.execute(thread);
@@ -148,29 +151,103 @@ public class JpegGhosts {
 				File dir = new File(folderDestination + "/" + folderName);
 				dir.mkdir();
 				Highgui.imwrite(folderDestination + "/" + folderName + "/" + fileEntry.getName() + '-'+ quality + ".png", differenceImage);
-				
-				detectTamper(differenceImage);
 	        }
 	    };
 	    executor.execute(thread);
     }
 
     
-    public void detectTamper(Mat differenceImage) {
+    public  double detectTamper(final File fileEntry, int width, int height, int x, int y) {
+    	Mat differenceImage = Highgui.imread(fileEntry.getPath());
+    	
+    	Mat histBackground = outsideImageHist(differenceImage, width, height, x, y);
+    	Mat histRegion = insideImageHist(differenceImage, width, height, x, y);
+    	
+//    	System.out.println(histBackground.dump());
+//    	System.out.println(histRegion.dump());
+    	
+    	double max = 0;
+    	for (int h = 0; h < histBackground.height(); h++) {
+			for (int w = 0; w < histBackground.width(); w++) {
+				double[] pixelHistBackground = histBackground.get(h, w);
+				double[] pixelHistRegion = histRegion.get(h, w);
+				
+				// considerar que os pixels mais escuros tem mais peso na hora do calculo da diferenca
+				// ignorar pontos com 0 no histograma
+				if (pixelHistRegion[0] > 0 && pixelHistBackground[0] > 0) {
+					double difference = (pixelHistRegion[0] - pixelHistBackground[0]);
+					if (difference > max) {
+						max = difference;
+					}
+				}
+			}
+    	}
+    	
+    	return max/256;
+    }
+    
+    private Mat insideImageHist(Mat differenceImage, int width, int height, int x, int y) {
+    	List<Mat> images = Arrays.asList(differenceImage);
+    	
     	MatOfInt histSize = new MatOfInt(256);
 
+        final MatOfFloat histRange = new MatOfFloat(0f, 256f);
+
+        boolean accumulate = false;
+        
+        Mat b_hist = new  Mat();
+        
+        int ghostWidth = width;
+		int ghostHeight = height;
+        
+        Size ghostSize = new Size(ghostWidth, ghostHeight);
+
+        Mat ones = Mat.ones(ghostSize, CvType.CV_8U); // all 1
+        Mat mask = Mat.zeros(differenceImage.size(), CvType.CV_8U); // all 0  
+		
+		
+		// Get the image region
+		Rect tamper = new Rect(x, y, (int)ghostSize.width, (int)ghostSize.height);
+        
+        Mat imageSubmat = mask.submat(tamper);
+        ones.copyTo(imageSubmat);
+        
+        Imgproc.calcHist(images, new MatOfInt(0), mask, b_hist, histSize, histRange, accumulate);
+        
+        Core.normalize(b_hist, b_hist, 0, 256, Core.NORM_MINMAX);
+        
+        return b_hist;
+	}
+
+	public Mat outsideImageHist(Mat differenceImage, int width, int height, int x, int y) {
+    	List<Mat> images = Arrays.asList(differenceImage);
+    	
+    	MatOfInt histSize = new MatOfInt(256);
 
         final MatOfFloat histRange = new MatOfFloat(0f, 256f);
 
         boolean accumulate = false;
 
+        int ghostWidth = width;
+		int ghostHeight = height;
+		
         Mat b_hist = new  Mat();
 
-        Mat mask = Mat.zeros(new Size(differenceImage.width(), differenceImage.height()), CvType.CV_8U); // all 0
-        mask(new Rect((differenceImage.width() / 2) -  200 / 2, (differenceImage.height() / 2) -  200 / 2, 200, 200));
+        Size ghostSize = new Size(ghostWidth, ghostHeight);
         
-        Imgproc.calcHist(differenceImage, new MatOfInt(0), mask, b_hist, histSize, histRange, accumulate);
+        Mat zeros = Mat.zeros(ghostSize, CvType.CV_8U); // all 0
+        Mat mask = Mat.ones(differenceImage.size(), CvType.CV_8U); // all 1
+		
+		// Get the image region
+		Rect tamper = new Rect(x, y, (int)ghostSize.width, (int)ghostSize.height);
         
+        Mat imageSubmat = mask.submat(tamper);
+        zeros.copyTo(imageSubmat);
         
+        Imgproc.calcHist(images, new MatOfInt(0), mask, b_hist, histSize, histRange, accumulate);
+        
+        Core.normalize(b_hist, b_hist, 0, 256, Core.NORM_MINMAX);
+
+        return b_hist;
     }
 }
