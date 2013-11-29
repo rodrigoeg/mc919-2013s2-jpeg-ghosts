@@ -3,7 +3,6 @@ package jpegghosts;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.Arrays;
-import java.util.Random;
 
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -92,8 +91,8 @@ public class DataSetGenerate {
 		
 //		int x = random.nextInt(image.width() - (int)ghostSize.width);
 //		int y = random.nextInt(image.height() - (int)ghostSize.height);
-		int x = 50;
-		int y = 100;
+		int x = (image.width() / 2) -  ghostWidth / 2;
+		int y = (image.height() / 2) -  ghostHeight / 2;
 		
 		// Get the image region
 		Rect tamper = new Rect(x, y, (int)ghostSize.width, (int)ghostSize.height);
@@ -101,7 +100,7 @@ public class DataSetGenerate {
 	}
 
 	private void compressImageRegion(Mat image, Mat imageRegion, Rect tamperPosition) {
-		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 60);
+		MatOfInt params = new MatOfInt(Highgui.CV_IMWRITE_JPEG_QUALITY, 30);
 
 		MatOfByte byteImage = new MatOfByte(); 
 		Highgui.imencode(".jpg", imageRegion, byteImage, params);
